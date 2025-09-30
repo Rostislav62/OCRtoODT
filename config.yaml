@@ -1,0 +1,28 @@
+# Общие настройки
+input_dir: "./input"
+output_file: "./output/result.odt"
+use_gpu: true  # Для PaddleOCR и других
+log_level: "INFO"
+
+# OCR
+ocr:
+  engine: "paddleocr"  # paddleocr | tesseract (резерв)
+  languages: ["ru", "en"]  # Русский, английский; добавлять другие
+  dpi: 300
+
+# Предобработка (методы выбирать списком)
+preprocess:
+  methods: ["grayscale", "binarize_otsu", "denoise_median", "contrast_clahe", "deskew_hough"]
+  variants: ["default"]  # Несколько вариантов вывода
+
+# Анализ строк
+classification:
+  caps_ratio: 0.7  # Для TITLE
+  center_tolerance_px: 40
+
+# Сборка ODT
+odt:
+  styles:
+    title: "Title"
+    paragraph: "Text Body"
+  page_break: true

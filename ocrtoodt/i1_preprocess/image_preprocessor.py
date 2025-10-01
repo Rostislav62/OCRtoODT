@@ -1,12 +1,35 @@
+# Путь: ocrtoodt/i1_preprocess/image_preprocessor.py
+# Назначение: Оркестратор для последовательного вызова методов предобработки изображений с логированием каждого метода и времени выполнения в файл.
+
 import cv2
-import numpy as np
 import logging
 import os
+import time
+from ocrtoodt.i1_preprocess.grayscale import apply_grayscale
+from ocrtoodt.i1_preprocess.binarize_otsu import apply_binarize_otsu
+from ocrtoodt.i1_preprocess.denoise_median import apply_denoise_median
+from ocrtoodt.i1_preprocess.contrast_clahe import apply_contrast_clahe
+from ocrtoodt.i1_preprocess.deskew_hough import apply_deskew_hough
+from ocrtoodt.i1_preprocess.perspective_correction import apply_perspective_correction
+from ocrtoodt.i1_preprocess.sharpen_edges import apply_sharpen_edges
+from ocrtoodt.i1_preprocess.check_dpi import apply_check_dpi
+
 
 class ImagePreprocessor:
     def __init__(self, config):
         self.config = config
-        logging.basicConfig(level=config.get("log_level", "INFO"))
+        # Настройка логирования в файл
+        log_dir = "cache/logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "preprocess.log")
+        logging.basicConfig(
+            level=config.get("log_level", "INFO"),
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            handlers=[
+                logging.FileHandler(log_file),
+                logging.StreamHandler()
+            ]
+        )
 
     def preprocess(self, image_path, output_dir):
         """Обрабатывает изображение с учётом методов из конфига."""
@@ -18,88 +41,36 @@ class ImagePreprocessor:
         results = []
         for variant in self.config["preprocess"]["variants"]:
             processed_img = img.copy()
-            for method in self.config["preprocess"]["methods"]:
-                if method == "grayscale":
-                    processed_img = cv2.cvtColor(processed_img, cv2.COLOR_BGR2GRAY)
-                elif method == "binarize_otsu":
-                    if len(processed_img.shape) == 3:
-                        processed_img = cv2.cvtColor(processed_img, cv2.COLOR_BGR2GRAY)
-                    _, processed_img = cv2.threshold(processed_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                elif method == "denoise_median":
-                    processed_img = cv2.medianBlur(processed_img, 3)
-                elif method == "contrast_clahe":
-                    if len(processed_img.shape) == 3:
-                        processed_img = cv2.cvtColor(processed_img, cv2.COLOR_BGR2GRAY)
-                    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-                    processed_img = clahe.apply(processed_img)
-                elif method == "deskew_hough":
-                    processed_img = self.deskew_hough(processed_img)
-                elif method == "perspective_correction":
-                    processed_img = self.perspective_correction(processed_img)
-                elif method == "sharpen_edges":
-                    processed_img = self.sharpen_edges(processed_img)
+            methods = self.config["preprocess"]["methods"]
+            if variant == "no_deskew_perspective":
+                methods = [m for m in methods if m not in ["deskew_hough", "perspective_correction"]]
+            logging.info(f"Применяемые методы для варианта '{variant}': {', '.join(methods)}")
 
-            # Сохранение варианта
+            start_time = time.time()
+            processed_img = apply_check_dpi(processed_img, self.config)
+            logging.info(f"Метод check_dpi выполнен за {time.time() - start_time:.3f} секунд")
+
+            for method in methods:
+                start_time = time.time()
+                if method == "grayscale":
+                    processed_img = apply_grayscale(processed_img)
+                elif method == "binarize_otsu":
+                    processed_img = apply_binarize_otsu(processed_img)
+                elif method == "denoise_median":
+                    processed_img = apply_denoise_median(processed_img)
+                elif method == "contrast_clahe":
+                    processed_img = apply_contrast_clahe(processed_img)
+                elif method == "deskew_hough":
+                    processed_img = apply_deskew_hough(processed_img)
+                elif method == "perspective_correction":
+                    processed_img = apply_perspective_correction(processed_img)
+                elif method == "sharpen_edges":
+                    processed_img = apply_sharpen_edges(processed_img)
+                logging.info(f"Метод {method} выполнен за {time.time() - start_time:.3f} секунд")
+
             output_path = f"{output_dir}/{variant}_{os.path.basename(image_path)}"
             cv2.imwrite(output_path, processed_img)
             logging.info(f"Сохранено: {output_path}")
             results.append(output_path)
 
         return results
-
-    def deskew_hough(self, img):
-        """Выравнивание наклонных строк с помощью Hough Transform."""
-        if len(img.shape) == 3:
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(img, 50, 150, apertureSize=3)
-        lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
-        if lines is not None:
-            angle = 0
-            for rho, theta in lines[0]:
-                angle = (theta * 180 / np.pi) - 90
-                break
-            (h, w) = img.shape[:2]
-            center = (w // 2, h // 2)
-            M = cv2.getRotationMatrix2D(center, angle, 1.0)
-            img = cv2.warpAffine(img, M, (w, h))
-        return img
-
-    def perspective_correction(self, img):
-        """Коррекция перспективы для выпуклых страниц."""
-        if len(img.shape) == 3:
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(img, 50, 150, apertureSize=3)
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if not contours:
-            logging.warning("Контуры страницы не найдены")
-            return img
-
-        contour = max(contours, key=cv2.contourArea)
-        epsilon = 0.02 * cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, epsilon, True)
-
-        if len(approx) == 4:
-            pts = approx.reshape(4, 2)
-            rect = np.zeros((4, 2), dtype="float32")
-            s = pts.sum(axis=1)
-            rect[0] = pts[np.argmin(s)]  # Верх-лево
-            rect[2] = pts[np.argmax(s)]  # Низ-право
-            diff = np.diff(pts, axis=1)
-            rect[1] = pts[np.argmin(diff)]  # Верх-право
-            rect[3] = pts[np.argmax(diff)]  # Низ-лево
-
-            (h, w) = img.shape[:2]
-            dst = np.array([[0, 0], [w-1, 0], [w-1, h-1], [0, h-1]], dtype="float32")
-            M = cv2.getPerspectiveTransform(rect, dst)
-            img = cv2.warpPerspective(img, M, (w, h))
-        else:
-            logging.warning("Недостаточно точек для коррекции перспективы")
-        return img
-
-    def sharpen_edges(self, img):
-        """Усиление резкости по краям."""
-        if len(img.shape) == 3:
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(img, (5, 5), 0)
-        img = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
-        return img

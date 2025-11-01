@@ -1,76 +1,109 @@
-# Путь: ocrtoodt/i1_preprocess/image_preprocessor.py
-# Назначение: Оркестратор для последовательного вызова методов предобработки изображений с логированием каждого метода и времени выполнения в файл.
-
-import cv2
-import logging
+# Path: ocrtoodt/i1_preprocess/image_preprocessor.py
 import os
-import time
-from ocrtoodt.i1_preprocess.grayscale import apply_grayscale
-from ocrtoodt.i1_preprocess.binarize_otsu import apply_binarize_otsu
-from ocrtoodt.i1_preprocess.denoise_median import apply_denoise_median
-from ocrtoodt.i1_preprocess.contrast_clahe import apply_contrast_clahe
-from ocrtoodt.i1_preprocess.deskew_hough import apply_deskew_hough
-from ocrtoodt.i1_preprocess.perspective_correction import apply_perspective_correction
-from ocrtoodt.i1_preprocess.sharpen_edges import apply_sharpen_edges
-from ocrtoodt.i1_preprocess.check_dpi import apply_check_dpi
-
+import cv2
+import numpy as np
+import logging
+from PIL import Image
 
 class ImagePreprocessor:
+    """
+    Единый модуль предобработки изображений.
+    Каждый шаг включается/выключается по флагам из config.yaml.
+    """
+
     def __init__(self, config):
         self.config = config
-        # Настройка логирования в файл
-        log_dir = "cache/logs"
-        os.makedirs(log_dir, exist_ok=True)
-        log_file = os.path.join(log_dir, "preprocess.log")
-        logging.basicConfig(
-            level=config.get("log_level", "INFO"),
-            format="%(asctime)s - %(levelname)s - %(message)s",
-            handlers=[
-                logging.FileHandler(log_file),
-                logging.StreamHandler()
-            ]
-        )
+        self.pre_cfg = config.get("preprocess", {})
+        self.preproc_dir = config.get("preproc_dir", "cache/preproc")
 
-    def preprocess(self, image_path, output_dir):
-        """Обрабатывает изображение с учётом методов из конфига."""
-        img = cv2.imread(image_path)
-        if img is None:
-            logging.error(f"Не удалось загрузить изображение: {image_path}")
-            return None
+    # ------------------------------------------------------------
+    def preprocess(self, image_path: str, output_dir: str = None):
+        """Основной конвейер предобработки (по флагам)."""
+        os.makedirs(output_dir or self.preproc_dir, exist_ok=True)
 
-        results = []
-        for variant in self.config["preprocess"]["variants"]:
-            processed_img = img.copy()
-            methods = self.config["preprocess"]["methods"]
-            if variant == "no_deskew_perspective":
-                methods = [m for m in methods if m not in ["deskew_hough", "perspective_correction"]]
-            logging.info(f"Применяемые методы для варианта '{variant}': {', '.join(methods)}")
+        # 1. Загрузка (универсально JPG, PNG, TIFF, PDF)
+        image = self.load_image(image_path)
+        logging.info(f"Изображение загружено: {image_path} ({image.shape})")
 
-            start_time = time.time()
-            processed_img = apply_check_dpi(processed_img, self.config)
-            logging.info(f"Метод check_dpi выполнен за {time.time() - start_time:.3f} секунд")
+        # 2. Преобразование в оттенки серого
+        if self.pre_cfg.get("grayscale", False):
+            image = self.to_grayscale(image)
+            logging.info("Преобразование в оттенки серого")
 
-            for method in methods:
-                start_time = time.time()
-                if method == "grayscale":
-                    processed_img = apply_grayscale(processed_img)
-                elif method == "binarize_otsu":
-                    processed_img = apply_binarize_otsu(processed_img)
-                elif method == "denoise_median":
-                    processed_img = apply_denoise_median(processed_img)
-                elif method == "contrast_clahe":
-                    processed_img = apply_contrast_clahe(processed_img)
-                elif method == "deskew_hough":
-                    processed_img = apply_deskew_hough(processed_img)
-                elif method == "perspective_correction":
-                    processed_img = apply_perspective_correction(processed_img)
-                elif method == "sharpen_edges":
-                    processed_img = apply_sharpen_edges(processed_img)
-                logging.info(f"Метод {method} выполнен за {time.time() - start_time:.3f} секунд")
+        # 3. Удаление шума
+        if self.pre_cfg.get("denoise_median", False):
+            image = self.denoise_median(image)
+            logging.info("Удаление шума (медианный фильтр)")
 
-            output_path = f"{output_dir}/{variant}_{os.path.basename(image_path)}"
-            cv2.imwrite(output_path, processed_img)
-            logging.info(f"Сохранено: {output_path}")
-            results.append(output_path)
+        # 4. Улучшение контраста CLAHE
+        if self.pre_cfg.get("contrast_clahe", False):
+            image = self.apply_contrast_clahe(image)
+            logging.info("Улучшение контраста CLAHE")
 
-        return results
+        # 5. Бинаризация методом Оцу
+        if self.pre_cfg.get("binarize_otsu", False):
+            image = self.binarize_otsu(image)
+            logging.info("Бинаризация Оцу")
+
+        # 6. Усиление резкости краёв
+        if self.pre_cfg.get("sharpen_edges", False):
+            image = self.sharpen_edges(image)
+            logging.info("Усиление резкости краёв")
+
+        # 7. Работа полностью в RAM — не сохраняем на диск
+        logging.info("Предобработка завершена (RAM only, без сохранения файлов)")
+        return {"final_image": image}
+
+    # ------------------------------------------------------------
+    def load_image(self, image_path: str):
+        """Поддержка JPG, PNG, TIFF, PDF (1-я страница PDF)."""
+        _, ext = os.path.splitext(image_path.lower())
+        if ext in [".tif", ".tiff"]:
+            img = Image.open(image_path)
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+            image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        elif ext in [".png", ".jpg", ".jpeg"]:
+            image = cv2.imread(image_path)
+        elif ext == ".pdf":
+            from pdf2image import convert_from_path
+            pages = convert_from_path(image_path, dpi=300)
+            if not pages:
+                raise ValueError(f"Не удалось извлечь страницы из PDF: {image_path}")
+            img = pages[0].convert("RGB")
+            image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        else:
+            raise ValueError(f"Неподдерживаемый формат файла: {ext}")
+        if image is None:
+            raise ValueError(f"Не удалось загрузить: {image_path}")
+        return image
+
+    # ------------------------------------------------------------
+    def to_grayscale(self, image):
+        return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    def denoise_median(self, image, ksize: int = 3):
+        return cv2.medianBlur(image, ksize)
+
+    def apply_contrast_clahe(self, image):
+        if len(image.shape) == 2:
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            return clahe.apply(image)
+        lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        l2 = clahe.apply(l)
+        merged = cv2.merge((l2, a, b))
+        return cv2.cvtColor(merged, cv2.COLOR_LAB2BGR)
+
+    def binarize_otsu(self, image):
+        if len(image.shape) == 3:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        return binary
+
+    def sharpen_edges(self, image):
+        kernel = np.array([[0, -1, 0],
+                           [-1, 5, -1],
+                           [0, -1, 0]])
+        return cv2.filter2D(image, -1, kernel)

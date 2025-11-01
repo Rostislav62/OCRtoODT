@@ -1,24 +1,37 @@
+# Путь: config.yaml
+# Назначение: Конфигурационный файл для всех этапов проекта, включая предобработку с опциями для каждого метода.
+
 # Общие настройки
-input_dir: "./input"
-output_file: "./output/result.odt"
-use_gpu: true
+input_dir: "/home/ro/PycharmProjects/OCRtoODT/input"
+output_file: "/home/ro/PycharmProjects/OCRtoODT/output/result.odt"
+# use_gpu: true  # Пока не используем gpu
 log_level: "INFO"
+
+parallel:
+  enabled: true
+  num_processes: auto   # 24 или "auto"
 
 # OCR
 ocr:
-  engine: "paddleocr"
-  languages: ["ru", "en"]
+  enabled_engines: ["tesseract"]  # Активные OCR-движки: paddleocr, tesseract или оба
+  languages: ["rus", "eng"]  # Коды Tesseract: rus для русского, eng для английского
   dpi: 300
+  tesseract_psm: 4  # PSM для Tesseract: 4, 6, 11
 
 # Предобработка
 preprocess:
-  methods: ["grayscale", "binarize_otsu", "denoise_median", "contrast_clahe", "deskew_hough", "perspective_correction", "sharpen_edges"]
-  variants: ["default", "high_contrast"]  # Добавлен второй вариант для тестов
+  grayscale: true            # Преобразование в оттенки серого
+  denoise_median: true       # Удаление шума медианным фильтром
+  contrast_clahe: true       # Улучшение контраста с помощью CLAHE
+  binarize_otsu: true        # Бинаризация методом Оцу
+  sharpen_edges: true        # Усиление резкости краёв
+
+
 
 # Анализ строк
 classification:
-  caps_ratio: 0.7
-  center_tolerance_px: 40
+  caps_ratio: 0.5
+  center_tolerance_px: 20
 
 # Сборка ODT
 odt:
@@ -26,3 +39,25 @@ odt:
     title: "Title"
     paragraph: "Text Body"
   page_break: true
+  font_name: "Times New Roman"
+  font_size: "12pt"
+  margin_left: "0.5cm"
+
+  insert_empty_lines: false      # ← отключить автоматическую вставку пустых строк по большим вертикальным разрывам
+  gap_empty_threshold: 1.9       # порог в «высотах строки»: gap > 1.9 * avg_line_height → можно вставить пустую строку
+  max_empty_lines: 1             # максимум подряд вставляемых пустых строк, если insert_empty_lines=true
+
+  paragraph_indent_min: 290      # x1 в диапазоне [indent_min, indent_max] трактуем как начало нового абзаца (красная строка)
+  paragraph_indent_max: 335      # верхняя граница диапазона x1 для начала нового абзаца
+  paragraph_continue_max: 125    # x1 ≤ continue_max трактуем как продолжение текущего абзаца (без разрыва)
+  paragraph_indent_spaces: 4     # сколько пробелов добавлять в начале абзаца для имитации красной строки
+
+  text_align: "justify"          # выравнивание основного текста по ширине (Paragraph)
+
+  definition_left_min: 500       # левая граница x1 для “врезки” (узкая колонка определений/пояснений)
+  definition_left_max: 600       # правая граница x1 для “врезки”
+  definition_right_min: 3000     # левая граница x2 для “врезки” (узкая колонка, не доходит до правого поля)
+  definition_right_max: 3960     # правая граница x2 для “врезки”
+
+  definition_gap_threshold: 1.2    # чувствительность для вертикального «воздуха» вокруг врезок
+  definition_gap_min: 40           # минимальное расстояние (в пикселях) между строками для вставки пустого параграфа

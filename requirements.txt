@@ -1,8 +1,13 @@
-pyyaml>=6.0.1
-pydantic>=2.8.2
-pytest>=8.3.2
+# OCRtoODT — минимальный набор библиотек для работы конвейера
+
 opencv-python>=4.10.0
 pillow>=10.4.0
-scikit-image>=0.24.0
-paddlepaddle-gpu>=2.6.2
+numpy>=1.26.4
+pandas>=2.2.2
+odfpy>=1.4.1
 pytesseract>=0.3.13
+pdf2image>=1.17.0
+PyYAML>=6.0.1
+
+# dev only
+pytest>=8.3.2

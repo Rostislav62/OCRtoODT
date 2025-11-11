@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Cache
+cache/
+*.log
+*.tsv
+*.odt
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+EOF

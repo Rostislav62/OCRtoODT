@@ -1,0 +1,78 @@
+# ============================================================
+#  OCRtoODT — Configuration File
+#  Location: /usr/bin/ocrtoodt/config.yaml
+#  All paths are absolute and correspond to the self-contained installation.
+# ============================================================
+
+
+program_root: /home/ro/PycharmProjects/OCRtoODT/ # Programm root Folder
+# --- General input/output directories ---
+input_dir: input # Folder where input images or PDFs are copied
+output_file: output/result.odt # Final ODT output file path
+log_file: cache/logs/pipeline.log # Detailed OCR pipeline log
+ocr_dir: cache/ocr # Intermediate OCR JSON/text files
+log_level: INFO                                # Logging verbosity (DEBUG, INFO, WARNING, ERROR)
+
+# --- OCR engine settings ---
+ocr:
+  enabled_engines:
+    - tesseract         # Currently only Tesseract is embedded, but can add paddleocr later
+  ocr_engine_path: tesseract/tesseract # Path to embedded Tesseract binary
+  tessdata_dir: tessdata # Path to tessdata folder with traineddata files
+
+# --- Parallel processing settings ---
+parallel:
+  enabled: true         # Use multiprocessing to process pages faster
+  num_processes: 10         # Number of worker processes (set >1 for multicore systems)
+
+  languages:
+    - rus
+    - eng
+  dpi: 300              # Target DPI for page rasterization
+  tesseract_psm: 4      # Tesseract page segmentation mode (4 = assume single column of text)
+
+# --- Image preprocessing pipeline ---
+preprocess:
+  grayscale: true        # Convert image to grayscale before processing
+  denoise_median: true   # Apply median filter to reduce noise
+  contrast_clahe: true   # Adaptive histogram equalization (CLAHE) for better contrast
+  binarize_otsu: true    # Threshold image using Otsu method
+  sharpen_edges: true    # Apply edge sharpening (useful for scanned text)
+
+# --- Layout classification ---
+classification:
+  caps_ratio: 0.5              # Minimum capital-letter ratio to consider text as title
+  center_tolerance_px: 20      # Pixel tolerance for center alignment detection
+
+# --- ODT document builder settings ---
+odt:
+  styles:
+    title: Title               # ODT style name for headings
+    paragraph: Text Body       # ODT style name for normal text
+  page_break: true             # Insert page breaks between OCRed pages
+  font_name: Times New Roman   # Default font family
+  font_size: 12pt              # Default font size
+  margin_left: 0.5cm           # Page left margin
+  insert_empty_lines: false    # Whether to preserve empty lines from OCR
+  gap_empty_threshold: 1.9     # Line spacing threshold to detect empty lines
+  max_empty_lines: 1           # Maximum number of consecutive empty lines
+  paragraph_indent_min: 99.99  # Indentation range (px) to detect paragraph starts
+  paragraph_indent_max: 99.99
+  paragraph_continue_max: 125  # Distance threshold for paragraph continuation
+  paragraph_indent_spaces: 4   # Number of spaces for indentation when exporting
+  text_align: justify          # Text alignment mode (left, right, center, justify)
+  definition_left_min: 500     # Left margin range for “definition list” detection
+  definition_left_max: 600
+  definition_right_min: 3000
+  definition_right_max: 3960
+  definition_gap_threshold: 1.2
+  definition_gap_min: 40
+
+# --- GUI (Qt interface) settings ---
+ui:
+  theme: dark                  # Options: light, dark, auto
+  font_size: 12                # Base font size in points
+  notify_on_finish: true       # Show notification when OCR completes
+  play_sound_on_finish: true   # Play success sound after processing
+mode: development
+base_dir: /home/ro/PycharmProjects/OCRtoODT

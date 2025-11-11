@@ -1,0 +1,418 @@
+/* gui/resources/style.qss
+  ==============================================================
+   OCRtoODT — Unified Stylesheet (Light + Dark themes)
+   --------------------------------------------------------------
+   Each block uses [theme="light"] / [theme="dark"] selectors.
+   Clear contrast, modern UI, consistent dialogs and tabs.
+   ============================================================== */
+
+
+/* =======================================================
+   🌤 LIGHT THEME — crisp, legible, high-contrast
+   ======================================================= */
+
+/* --- Main window --- */
+QMainWindow[theme="light"] {
+    background-color: #f8f9fb;   /* soft neutral background */
+    color: #111111;              /* dark text for readability */
+}
+
+/* --- Toolbar --- */
+QToolBar[theme="light"] {
+    background-color: #e6e9ef;   /* slightly darker bar */
+    border-bottom: 1px solid #c7ccd3;
+    spacing: 6px;
+    padding: 4px 6px;
+}
+
+QToolButton[theme="light"] {
+    background: transparent;
+    border: none;
+    color: #1a1a1a;
+    font-size: 10pt;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+QToolButton[theme="light"]:hover {
+    background-color: #dce3f3;
+}
+
+QToolButton[theme="light"]:pressed {
+    background-color: #c9d5f0;
+}
+
+/* --- Status bar --- */
+QStatusBar[theme="light"] {
+    background-color: #e2e6ed;
+    color: #111;
+    font-weight: 500;
+    padding: 2px;
+}
+
+/* --- Progress bar --- */
+QProgressBar[theme="light"] {
+    background-color: #dee3ef;
+    border: 1px solid #b0b8c8;
+    border-radius: 6px;
+    text-align: center;
+    color: #000;
+}
+QProgressBar::chunk[theme="light"] {
+    background-color: #2563eb;
+    border-radius: 6px;
+}
+
+/* --- Text areas and logs --- */
+QTextEdit[theme="light"],
+QPlainTextEdit[theme="light"],
+QListView[theme="light"] {
+    background-color: #ffffff;
+    color: #111;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    selection-background-color: #2563eb;
+    selection-color: #ffffff;
+}
+
+/* --- Inputs and combo boxes --- */
+QLineEdit[theme="light"],
+QComboBox[theme="light"],
+QSpinBox[theme="light"],
+QDoubleSpinBox[theme="light"] {
+    background: #ffffff;
+    color: #111;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 4px 6px;
+}
+QLineEdit[theme="light"]:focus,
+QComboBox[theme="light"]:focus,
+QSpinBox[theme="light"]:focus {
+    border: 1px solid #2563eb;
+    outline: none;
+}
+
+/* --- Tabs and forms --- */
+QTabWidget::pane[theme="light"] {
+    border: 1px solid #ccd3e0;
+    border-radius: 6px;
+    background: #ffffff;
+}
+QTabBar::tab[theme="light"] {
+    background: #f2f4f8;
+    color: #111;
+    padding: 6px 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    margin-right: 2px;
+}
+QTabBar::tab:selected[theme="light"] {
+    background: #ffffff;
+    border: 1px solid #c7ccd3;
+    border-bottom: 2px solid #2563eb;
+}
+
+/* --- Dialogs (About, Settings, Help) --- */
+/* Dialog base — light */
+QDialog[theme="light"] {
+    background-color: #fafbff;
+    color: #111;                 /* default text for dialog and inheriting children */
+    border-radius: 8px;
+}
+
+/* Make ALL labels inside a light-themed dialog readable */
+QDialog[theme="light"] QLabel {
+    color: #111;
+}
+
+/* Specific title label inside a light-themed dialog */
+QDialog[theme="light"] QLabel#lblTitle {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #111;                 /* explicit (can be omitted, inherits from above) */
+}
+
+
+/* --- Buttons --- */
+QPushButton[theme="light"] {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+QPushButton[theme="light"]:hover {
+    background-color: #1e4ed8;
+}
+QPushButton[theme="light"]:disabled {
+    background-color: #cbd5e1;
+    color: #666;
+}
+
+/* --- Scrollbars --- */
+QScrollBar:vertical[theme="light"],
+QScrollBar:horizontal[theme="light"] {
+    background: #e5e9f2;
+    border: none;
+    border-radius: 6px;
+}
+QScrollBar::handle[theme="light"] {
+    background: #c1c8d8;
+    border-radius: 6px;
+}
+QScrollBar::handle:hover[theme="light"] {
+    background: #aab4c8;
+}
+
+/* --- Tooltips --- */
+QToolTip[theme="light"] {
+    background-color: #f1f5f9;
+    color: #111;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+
+/* Labels inside QDialog/QTabWidget (light theme) */
+QDialog[theme="light"] QLabel,
+QTabWidget[theme="light"] QLabel {
+    color: #111;  /* make all labels dark text */
+}
+
+/* Checkboxes (light theme) */
+QDialog[theme="light"] QCheckBox,
+QTabWidget[theme="light"] QCheckBox {
+    background: #ffffff;
+    color: #111;
+}
+
+/* Group boxes (sometimes used inside tabs) */
+QGroupBox[theme="light"] {
+    color: #111;
+}
+
+/* Tab background and content area */
+QTabWidget::pane[theme="light"] {
+    background: #ffffff;
+    border: 1px solid #ccd3e0;
+    border-radius: 6px;
+}
+
+/* Tab labels */
+QTabBar::tab[theme="light"] {
+    background: #f3f5f8;
+    color: #111;
+    padding: 6px 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+QTabBar::tab:selected[theme="light"] {
+    background: #ffffff;
+    color: #000;
+    border: 1px solid #c7ccd3;
+    border-bottom: 2px solid #2563eb;
+}
+
+/* --- Tabs (light) --- */
+QTabWidget::pane[theme="light"] {
+    border: 1px solid #ccd3e0;
+    border-radius: 6px;
+    background: #ffffff;
+}
+QTabBar::tab[theme="light"] {
+    background: #f1f3f8;
+    color: #111;            /* text from palette is already dark, but keep for clarity */
+    padding: 6px 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+QTabBar::tab:selected[theme="light"] {
+    background: #ffffff;
+    border-bottom: 2px solid #2563eb;
+    color: #111;
+}
+
+/* =======================================================
+   🌑 DARK THEME — balanced, readable, calm contrast
+   ======================================================= */
+
+QMainWindow[theme="dark"] {
+    background-color: #1e1e1e;
+    color: #f5f5f5;
+}
+
+/* --- Toolbar --- */
+QToolBar[theme="dark"] {
+    background-color: #2a2a2a;
+    border-bottom: 1px solid #3a3a3a;
+    spacing: 4px;
+    padding: 6px;
+}
+
+QToolButton[theme="dark"] {
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    font-size: 10pt;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+QToolButton[theme="dark"]:hover {
+    background-color: #383838;
+}
+QToolButton[theme="dark"]:pressed {
+    background-color: #404040;
+}
+
+/* --- Status bar --- */
+QStatusBar[theme="dark"] {
+    background-color: #252525;
+    color: #e0e0e0;
+}
+
+/* --- Progress bar --- */
+QProgressBar[theme="dark"] {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #ffffff;
+}
+QProgressBar::chunk[theme="dark"] {
+    background-color: #4a90e2;
+}
+
+/* --- Text areas --- */
+QTextEdit[theme="dark"],
+QPlainTextEdit[theme="dark"],
+QListView[theme="dark"] {
+    background: #2b2b2b;
+    color: #e0e0e0;
+    selection-background-color: #4a90e2;
+    selection-color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 4px;
+}
+
+/* --- Inputs and checkboxes --- */
+QLineEdit[theme="dark"],
+QComboBox[theme="dark"],
+QSpinBox[theme="dark"],
+QDoubleSpinBox[theme="dark"] {
+    background: #2b2b2b;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 3px;
+}
+QLineEdit:focus[theme="dark"],
+QComboBox:focus[theme="dark"],
+QSpinBox:focus[theme="dark"] {
+    border: 1px solid #4a90e2;
+}
+
+/* --- Tabs --- */
+QTabWidget::pane[theme="dark"] {
+    border: 1px solid #444;
+    background: #1f1f1f;
+    border-radius: 6px;
+}
+QTabBar::tab[theme="dark"] {
+    background: #2b2b2b;
+    color: #e0e0e0;
+    padding: 6px 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    margin-right: 2px;
+}
+QTabBar::tab:selected[theme="dark"] {
+    background: #1f1f1f;
+    border: 1px solid #4a4a4a;
+    border-bottom: 2px solid #4a90e2;
+}
+
+/* --- Dialogs (About, Help, Settings) --- */
+QDialog[theme="dark"] {
+    background-color: #2b2b2b;
+    color: #e0e0e0;
+}
+
+QDialog QLabel#lblTitle[theme="dark"] {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #e5e5e5;
+}
+
+QDialog QLabel#lblLink[theme="dark"] {
+    color: #4a90e2;
+}
+
+QDialog QTextBrowser[theme="dark"] {
+    background: #1f1f1f;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 8px;
+}
+
+/* --- Buttons --- */
+QPushButton[theme="dark"] {
+    background-color: #4a90e2;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500;
+    border: none;
+}
+QPushButton[theme="dark"]:hover {
+    background-color: #5ea0f2;
+}
+QPushButton[theme="dark"]:disabled {
+    background-color: #555;
+}
+
+/* --- Scrollbars --- */
+QScrollBar:vertical[theme="dark"],
+QScrollBar:horizontal[theme="dark"] {
+    background: #2a2a2a;
+    border: none;
+}
+QScrollBar::handle[theme="dark"] {
+    background: #444;
+    border-radius: 6px;
+}
+QScrollBar::handle:hover[theme="dark"] {
+    background: #5a5a5a;
+}
+
+/* --- Tooltips --- */
+QToolTip[theme="dark"] {
+    background-color: #2e2e2e;
+    color: #f5f5f5;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* --- Tabs (dark) --- */
+QTabWidget::pane[theme="dark"] {
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    background: #1e1e1e;   /* slightly lighter than full black */
+}
+QTabBar::tab[theme="dark"] {
+    background: #2a2a2a;
+    color: #e0e0e0;        /* readable text */
+    padding: 6px 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+QTabBar::tab:selected[theme="dark"] {
+    background: #333333;
+    border-bottom: 2px solid #4a90e2;
+    color: #ffffff;
+}
+
+/* ==============================================================
+   END OF FILE
+   ============================================================== */

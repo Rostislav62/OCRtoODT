@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=OCRtoODT
+Comment=Convert scanned PDFs and images into editable ODT documents
+Exec=/home/ro/PycharmProjects/OCRtoODT/run_gui.sh
+Icon=/home/ro/PycharmProjects/OCRtoODT/gui/resources/icons/app_icon.ico
+Terminal=false
+Type=Application
+Categories=Office;Utility;
+StartupNotify=true

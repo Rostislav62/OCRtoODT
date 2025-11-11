@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>HelpDialog</class>
+ <widget class="QDialog" name="HelpDialog">
+  <property name="windowTitle">
+   <string>Справка OCRtoODT</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
+
+   <!-- Верхняя часть: логотип + заголовок -->
+   <item>
+    <layout class="QHBoxLayout" name="layoutHeader">
+     <item>
+      <widget class="QLabel" name="lblLogo">
+       <property name="pixmap">
+        <pixmap>resources/icons/help.svg</pixmap>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblTitle">
+       <property name="text">
+        <string>&lt;h2&gt;OCRtoODT — документация&lt;/h2&gt;</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignVCenter|Qt::AlignLeft</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Горизонтальная линия -->
+   <item>
+    <widget class="Line" name="lineHeader">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+
+   <!-- Основная область со справкой -->
+   <item>
+    <widget class="QTextBrowser" name="textBrowser">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+
+   <!-- Поисковая панель -->
+   <item>
+    <layout class="QHBoxLayout" name="layoutSearch">
+     <item>
+      <widget class="QLabel" name="lblFind">
+       <property name="text">
+        <string>Найти:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="editFind"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnPrev">
+       <property name="text">
+        <string>←</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnNext">
+       <property name="text">
+        <string>→</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Подпись Ctrl+F -->
+   <item>
+    <widget class="QLabel" name="lblHint">
+     <property name="text">
+      <string>💡 Совет: используйте Ctrl+F для фокуса на поиск</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignVCenter</set>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #6b7280; font-size: 9pt;</string>
+     </property>
+    </widget>
+   </item>
+
+   <!-- Кнопка Закрыть -->
+   <item alignment="Qt::AlignRight">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
